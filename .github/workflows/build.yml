@@ -1,4 +1,4 @@
-name: Build macOS App
+name: Build Windows EXE
 
 on:
   push:
@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-macos:
-    name: Build macOS App
-    runs-on: macos-latest
+  build-windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.10' 
 
     - name: Install dependencies
       run: |
@@ -26,19 +26,14 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: Build App
+    - name: Build EXE
       run: |
-        # --windowed 生成 .app 包
-        pyinstaller --windowed --noconfirm --name="DualSourceCT_Simulator" simulate_qt.py
+        # 增加 --hidden-import=numpy 以及其他核心库，强制 PyInstaller 将其打包
+        # --clean 清除缓存，避免旧构建干扰
+        pyinstaller --noconfirm --onefile --windowed --clean --hidden-import=numpy --hidden-import=numpy.core --hidden-import=PyQt5 --hidden-import=pyqtgraph --hidden-import=skimage --hidden-import=OpenGL --name="DualSourceCT_Simulator" simulate_qt.py
 
-    - name: Zip App Bundle
-      run: |
-        cd dist
-        # 使用 ditto 压缩 .app 以保留权限和元数据，这是 macOS 上推荐的方式
-        ditto -c -k --sequesterRsrc --keepParent DualSourceCT_Simulator.app DualSourceCT_Simulator_Mac.zip
-
-    - name: Upload macOS Artifact
+    - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: DualSourceCT_Simulator_MacOS
-        path: dist/DualSourceCT_Simulator_Mac.zip
+        name: DualSourceCT_Simulator_Windows
+        path: dist/DualSourceCT_Simulator.exe
