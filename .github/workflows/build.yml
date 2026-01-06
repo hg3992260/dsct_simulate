@@ -1,0 +1,41 @@
+name: Build EXE
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10' 
+        # 使用 3.10 或 3.9 较为稳定，避免 3.13 可能的兼容性问题，
+        # 除非代码使用了 3.13 特性。simulate_qt.py 看起来比较标准。
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Build EXE
+      run: |
+        # --onefile: 打包成单文件
+        # --windowed: 不显示控制台窗口 (GUI 程序)
+        # --name: 指定生成的文件名
+        pyinstaller --onefile --windowed --name="DualSourceCT_Simulator" simulate_qt.py
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: DualSourceCT_Simulator_EXE
+        path: dist/DualSourceCT_Simulator.exe
