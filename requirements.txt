@@ -1,0 +1,6 @@
+numpy
+PyQt5
+pyqtgraph
+scikit-image
+PyOpenGL
+PyOpenGL_accelerate
